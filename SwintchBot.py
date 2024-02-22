@@ -32,10 +32,65 @@ nonce=""
 apiHeader = {}
 
 def main():
-    Login_SwitchBot()
-    response=GET_Device_List()
-    for data in response:
-        print(data)
+    ft.app(target=FLET_Login)
+    # Login_SwitchBot()
+    # response=GET_Device_List()
+    # for data in response:
+    #    print(data)
+
+def FLET_Login(page:ft.Page):
+    page.title="Login"
+    page.window_width=800
+    page.window_height=500
+
+    Logo=ft.Image(
+        src=f"assets/Logo_long.png",
+    )
+    Text_token=ft.TextField(
+            expand=False,
+            label="token",
+            hint_text="Enter token",
+            focused_border_color="#4d82bc",
+        )
+    Text_secret=ft.TextField(
+            expand=False,
+            label="secret",
+            hint_text="Enter secret",
+            focused_border_color="#4d82bc",
+        )
+    Button_Login=ft.ElevatedButton(
+                "Login",
+                style=ft.ButtonStyle(
+                    shape=ft.RoundedRectangleBorder(radius=10),
+                ),
+                bgcolor="#4d82bc",
+                color="#ffffff",
+                width=200,
+            )
+    Space=ft.Column(
+        height=50
+    )
+    Logo_View=ft.Column(
+        width=300,
+        controls=[
+            Logo,
+        ]
+    )
+    Text_View=ft.Column(
+        width=400,
+        controls=[
+            Text_token,
+            Text_secret,
+        ],
+    )
+
+    page.horizontal_alignment=ft.CrossAxisAlignment.CENTER
+    page.vertical_alignment=ft.MainAxisAlignment.CENTER
+    page.bgcolor="#FFFFFF"
+
+    page.add(Logo_View,Text_View,Button_Login,Space)
+    page.update()
+
 
 def GET_Request(url):
     response=requests.get(url,headers=apiHeader)
