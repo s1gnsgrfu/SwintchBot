@@ -5,10 +5,12 @@ This software is released under the Apache-2.0 license.
 see https://github.com/s1gnsgrfu/SwintchBot/blob/master/LICENSE
 """
 
+import asyncio
 import base64
 import hashlib
 import hmac
 import json
+import pathlib
 import time
 import uuid
 
@@ -20,7 +22,8 @@ import requests
 # ! 2nd line : secret
 
 # * URL
-Domain_URL = "https://api.switch-bot.com"
+Domain_URL = "http://localhost:8089"  # Debug
+# Domain_URL = "https://api.switch-bot.com"
 Device_List_URL = Domain_URL + "/v1.1/devices"
 
 # * Variable
@@ -37,6 +40,7 @@ def main():
     ft.app(target=FLET_Login)
     # Login_SwitchBot()
     # response=GET_Device_List()
+    # response=Login_SwitchBot()
     # for data in response:
     #    print(data)
 
@@ -64,6 +68,7 @@ def FLET_Login(page: ft.Page):
         label="token",
         hint_text="Enter token",
         focused_border_color="#4d82bc",
+        color="#000000",
     )
 
     LOGIN_Text_secret = ft.TextField(
@@ -71,10 +76,22 @@ def FLET_Login(page: ft.Page):
         label="secret",
         hint_text="Enter secret",
         focused_border_color="#4d82bc",
+        color="#000000",
     )
 
     def LOGIN_Click(e):
-        lambda _: page.go("/home")
+        # TODO Loggin->TextValue
+        response = Login_SwitchBot()
+        if response == False:
+            e.control.page.snack_bar = ft.SnackBar(
+                ft.Text("Login Failed", color="#ffffff"), bgcolor="#ff4a4a"
+            )
+            e.control.page.snack_bar.open = True
+            e.control.page.update()
+        else:
+            page.go("/home")
+            for data in response:
+                print(data)
 
     LOGIN_Button_Login = ft.ElevatedButton(
         "Login",
@@ -145,7 +162,7 @@ def GET_Device_List():
         devices = GET_Request(Device_List_URL)["body"]
         return devices["deviceList"]
     except:
-        return
+        return False
 
 
 def Login_SwitchBot():
@@ -155,13 +172,22 @@ def Login_SwitchBot():
     # *         [1]-secret
     keys = []
 
-    with open("key", "r") as f:
+    path = pathlib.Path("key")
+
+    if not path.exists():
+        path.touch()
+    with path.open("r") as f:
         keys = f.read().splitlines()
 
     # open token
-    token = keys[0]
     # secret key
-    secret = keys[1]
+    if len(keys) < 2:
+        token = ""
+        secret = ""
+    else:
+        token = keys[0]
+        secret = keys[1]
+
     nonce = uuid.uuid4()
     t = int(round(time.time() * 1000))
     string_to_sign = "{}{}{}".format(token, t, nonce)
@@ -185,6 +211,8 @@ def Login_SwitchBot():
     apiHeader["t"] = str(t)
     apiHeader["sign"] = str(sign, "utf-8")
     apiHeader["nonce"] = str(nonce)
+
+    return GET_Device_List()
 
 
 if __name__ == "__main__":
