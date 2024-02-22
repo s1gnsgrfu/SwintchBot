@@ -172,5 +172,6 @@ pyrightconfig.json
 
 # manual
 /key
+/assets/*.xcf
 
 # End of https://www.toptal.com/developers/gitignore/api/python
