@@ -43,22 +43,31 @@ def FLET_Login(page:ft.Page):
     page.window_width=800
     page.window_height=500
 
-    Logo=ft.Image(
+    def Route_Change(route):
+        page.views.clear()
+        page.views.append(LOGIN_View)
+
+        if(page.route=="/home"):
+            page.views.clear()
+            page.views.append(HOME_DEV)
+
+    #--LOGIN--
+    LOGIN_Logo=ft.Image(
         src=f"assets/Logo_long.png",
     )
-    Text_token=ft.TextField(
+    LOGIN_Text_token=ft.TextField(
             expand=False,
             label="token",
             hint_text="Enter token",
             focused_border_color="#4d82bc",
         )
-    Text_secret=ft.TextField(
+    LOGIN_Text_secret=ft.TextField(
             expand=False,
             label="secret",
             hint_text="Enter secret",
             focused_border_color="#4d82bc",
         )
-    Button_Login=ft.ElevatedButton(
+    LOGIN_Button_Login=ft.ElevatedButton(
                 "Login",
                 style=ft.ButtonStyle(
                     shape=ft.RoundedRectangleBorder(radius=10),
@@ -66,31 +75,53 @@ def FLET_Login(page:ft.Page):
                 bgcolor="#4d82bc",
                 color="#ffffff",
                 width=200,
+                on_click=lambda _: page.go("/home")
             )
-    Space=ft.Column(
+    LOGIN_Space=ft.Column(
         height=50
     )
-    Logo_View=ft.Column(
+    LOGIN_Logo_Con=ft.Column(
         width=300,
         controls=[
-            Logo,
+            LOGIN_Logo,
         ]
     )
-    Text_View=ft.Column(
+    LOGIN_Text_Con=ft.Column(
         width=400,
         controls=[
-            Text_token,
-            Text_secret,
+            LOGIN_Text_token,
+            LOGIN_Text_secret,
         ],
     )
+    LOGIN_View=ft.View(
+        "/",
+        [
+            LOGIN_Logo_Con,LOGIN_Text_Con,LOGIN_Button_Login,LOGIN_Space
+        ],
+        horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+        vertical_alignment=ft.MainAxisAlignment.CENTER,
+        bgcolor="#ffffff",
+    )
+    #--LOGIN--
 
-    page.horizontal_alignment=ft.CrossAxisAlignment.CENTER
-    page.vertical_alignment=ft.MainAxisAlignment.CENTER
-    page.bgcolor="#FFFFFF"
+    #--HOME--
+    HOME_DEV=ft.View(
+        "/home",
+        [
+            ft.Text("HOME",color="#000000")
+        ],
+        bgcolor="#ffffff",
+    )
+    #--HOME--
 
-    page.add(Logo_View,Text_View,Button_Login,Space)
-    page.update()
+    def view_pop(view):
+        page.views.pop()
+        top_view = page.views[-1]
+        page.go(top_view.route)
 
+    page.on_route_change = Route_Change
+    page.on_view_pop = view_pop
+    page.go(page.route)
 
 def GET_Request(url):
     response=requests.get(url,headers=apiHeader)
