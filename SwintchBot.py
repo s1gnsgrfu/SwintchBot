@@ -22,8 +22,7 @@ import requests
 # ! 2nd line : secret
 
 # * URL
-Domain_URL = "http://localhost:8089"  # Debug
-# Domain_URL = "https://api.switch-bot.com"
+Domain_URL = "https://api.switch-bot.com"
 Device_List_URL = Domain_URL + "/v1.1/devices"
 
 # * Variable
@@ -49,10 +48,12 @@ def FLET_Login(page: ft.Page):
     page.title = "Login"
     page.window_width = 800
     page.window_height = 500
+    page.theme_mode = ft.ThemeMode.LIGHT
 
     def Route_Change(route):
         page.views.clear()
-        page.views.append(LOGIN_View)
+        # page.views.append(LOGIN_View)
+        page.views.append(HOME_DEV)  # debug
 
         if page.route == "/home":
             page.views.clear()
@@ -126,15 +127,36 @@ def FLET_Login(page: ft.Page):
         [LOGIN_Logo_Con, LOGIN_Text_Con, LOGIN_Button_Login, LOGIN_Space],
         horizontal_alignment=ft.CrossAxisAlignment.CENTER,
         vertical_alignment=ft.MainAxisAlignment.CENTER,
-        bgcolor="#ffffff",
     )
     # --LOGIN--
 
     # --HOME--
+    HOME_Navigation = ft.NavigationBar(
+        destinations=[
+            ft.NavigationDestination(
+                icon=ft.icons.HOME_OUTLINED,
+                selected_icon=ft.icons.HOME_FILLED,
+                label="Home",
+            ),
+            ft.NavigationDestination(
+                icon=ft.icons.HOURGLASS_EMPTY_OUTLINED,
+                selected_icon=ft.icons.HOURGLASS_FULL_OUTLINED,
+                label="Scenes",
+            ),
+            ft.NavigationDestination(
+                icon=ft.icons.SETTINGS_OUTLINED,
+                selected_icon=ft.icons.SETTINGS,
+                label="Settings",
+            ),
+        ],
+        height=50,
+        surface_tint_color="#d9d9d9",
+        indicator_color="#d9d9d9",
+    )
+
     HOME_DEV = ft.View(
         "/home",
-        [ft.Text("HOME", color="#000000")],
-        bgcolor="#ffffff",
+        [ft.Text("HOME", color="#000000"), HOME_Navigation],
     )
     # --HOME--
 
