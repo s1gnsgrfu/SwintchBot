@@ -131,32 +131,42 @@ def FLET_Login(page: ft.Page):
     # --LOGIN--
 
     # --HOME--
-    HOME_Navigation = ft.NavigationBar(
+    page_name = ["Home", "Scenes", "Settings"]
+
+    HOME_home_page = ft.Text("HOME")
+
+    def Nav(index):
+        str = page_name[index]
+        HOME_home_page.value = f"changed to {str}"
+        page.update()
+
+    Navigation = ft.NavigationBar(
         destinations=[
             ft.NavigationDestination(
                 icon=ft.icons.HOME_OUTLINED,
                 selected_icon=ft.icons.HOME_FILLED,
-                label="Home",
+                label=page_name[0],
             ),
             ft.NavigationDestination(
                 icon=ft.icons.HOURGLASS_EMPTY_OUTLINED,
                 selected_icon=ft.icons.HOURGLASS_FULL_OUTLINED,
-                label="Scenes",
+                label=page_name[1],
             ),
             ft.NavigationDestination(
                 icon=ft.icons.SETTINGS_OUTLINED,
                 selected_icon=ft.icons.SETTINGS,
-                label="Settings",
+                label=page_name[2],
             ),
         ],
         height=50,
         surface_tint_color="#d9d9d9",
         indicator_color="#d9d9d9",
+        on_change=lambda e: Nav(e.control.selected_index),
     )
 
     HOME_DEV = ft.View(
         "/home",
-        [ft.Text("HOME", color="#000000"), HOME_Navigation],
+        [HOME_home_page, Navigation],
     )
     # --HOME--
 
