@@ -34,7 +34,6 @@ nonce = ""
 # * HTTP Header
 apiHeader = {}
 
-
 def main():
     ft.app(target=FLET_Login)
     # Login_SwitchBot()
@@ -52,12 +51,12 @@ def FLET_Login(page: ft.Page):
 
     def Route_Change(route):
         page.views.clear()
-        # page.views.append(LOGIN_View)
-        page.views.append(HOME_DEV)  # debug
+        page.views.append(LOGIN_View)
+        # page.views.append(HOME_DEV)  # debug
+        # ChangePage(0)  #debug
 
-        if page.route == "/home":
-            page.views.clear()
-            page.views.append(HOME_DEV)
+        if page.route == "/main":
+            ChangePage(0)
 
     # --LOGIN--
     LOGIN_Logo = ft.Image(
@@ -81,7 +80,6 @@ def FLET_Login(page: ft.Page):
     )
 
     def LOGIN_Click(e):
-        # TODO Loggin->TextValue
         response = Login_SwitchBot()
         if response == False:
             e.control.page.snack_bar = ft.SnackBar(
@@ -90,7 +88,7 @@ def FLET_Login(page: ft.Page):
             e.control.page.snack_bar.open = True
             e.control.page.update()
         else:
-            page.go("/home")
+            page.go("/main")
             for data in response:
                 print(data)
 
@@ -133,12 +131,58 @@ def FLET_Login(page: ft.Page):
     # --HOME--
     page_name = ["Home", "Scenes", "Settings"]
 
-    HOME_home_page = ft.Text("HOME")
+    Main_home_page = ft.Container(
+                    content=ft.Text("Clickable transparent with Ink"),
+                    margin=10,
+                    padding=10,
+                    alignment=ft.alignment.center,
+                    width=150,
+                    height=150,
+                    border_radius=10,
+                    ink=True,
+                    bgcolor="#FF0000",
+                    on_click=lambda e: print("Clickable transparent with Ink clicked!"),
+                )
+
+    Main_scenes_page = ft.Container(
+                    content=ft.Text("Clickable transparent with Ink"),
+                    margin=10,
+                    padding=10,
+                    alignment=ft.alignment.center,
+                    width=150,
+                    height=150,
+                    border_radius=10,
+                    ink=True,
+                    bgcolor="#00FF00",
+                    on_click=lambda e: print("Clickable transparent with Ink clicked!"),
+                )
+
+    Main_settings_page = ft.Container(
+                    content=ft.Text("Clickable transparent with Ink"),
+                    margin=10,
+                    padding=10,
+                    alignment=ft.alignment.center,
+                    width=150,
+                    height=150,
+                    border_radius=10,
+                    ink=True,
+                    bgcolor="#0000FF",
+                    on_click=lambda e: print("Clickable transparent with Ink clicked!"),
+                )
+
+    def ChangePage(index):
+        page.views.clear()
+        if index == 0:
+            page.views.append(HOME_DEV)
+        elif index == 1:
+            page.views.append(SCENCES_DEV)
+        elif index == 2:
+            page.views.append(SETTINGS_DEV)
+        page.update()
 
     def HOME_NavigationBar_Selected(index):
-        str = page_name[index]
-        HOME_home_page.value = f"changed to {str}"
-        page.update()
+        print(f"Selected: {page_name[index]}")
+        ChangePage(index)
 
     Navigation = ft.NavigationBar(
         destinations=[
@@ -165,9 +209,20 @@ def FLET_Login(page: ft.Page):
     )
 
     HOME_DEV = ft.View(
-        "/home",
-        [HOME_home_page, Navigation],
+        "/main",
+        [Main_home_page, Navigation],
     )
+
+    SCENCES_DEV = ft.View(
+        "/main",
+        [Main_scenes_page, Navigation],
+    )
+
+    SETTINGS_DEV = ft.View(
+        "/main",
+        [Main_settings_page, Navigation],
+    )
+
     # --HOME--
 
     def view_pop(view):
