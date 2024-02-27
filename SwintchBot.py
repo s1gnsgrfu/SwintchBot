@@ -135,7 +135,7 @@ def FLET_Login(page: ft.Page):
 
     HOME_home_page = ft.Text("HOME")
 
-    def Nav(index):
+    def HOME_NavigationBar_Selected(index):
         str = page_name[index]
         HOME_home_page.value = f"changed to {str}"
         page.update()
@@ -161,7 +161,7 @@ def FLET_Login(page: ft.Page):
         height=50,
         surface_tint_color="#d9d9d9",
         indicator_color="#d9d9d9",
-        on_change=lambda e: Nav(e.control.selected_index),
+        on_change=lambda e: HOME_NavigationBar_Selected(e.control.selected_index),
     )
 
     HOME_DEV = ft.View(
