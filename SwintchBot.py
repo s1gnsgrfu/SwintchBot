@@ -17,23 +17,20 @@ import uuid
 import flet as ft
 import requests
 
-
-class Device:
-    def __init__(self, device_id, device_name, device_type):
-        self.device_id = device_id
-        self.device_name = device_name
-        self.device_type = device_type
-
-    # device_list=ft.
-
-
 # ! The token and secret are written in the key file.
 # ! 1st line : token
 # ! 2nd line : secret
 
+# TODO infraredRemoteList
+
 # * URL
 Domain_URL = "https://api.switch-bot.com"
-Device_List_URL = Domain_URL + "/v1.1/devices"
+Device_List_URL = f"{Domain_URL}/v1.1/devices"
+
+
+def Device_Status_URL(id):
+    return f"{Device_List_URL}/{id}/status"
+
 
 # * Variable
 token = ""
@@ -43,6 +40,136 @@ nonce = ""
 
 # * HTTP Header
 apiHeader = {}
+
+# * Property
+PAGE_WIDTH = 940
+PAGE_HEIGHT = 600
+HOME_BGCOLOR = "#ededed"
+ICON_WIDTH = 40
+
+
+class Device:
+    def __init__(self, id, name, type):
+        self.id = id
+        self.name = name
+        self.type = type
+
+    def device_content(data):
+        device_btn = ft.Column(
+            [
+                ft.Image(
+                    src=f"assets/device_icon/{data.type}.png",
+                    width=ICON_WIDTH,
+                ),
+                ft.Column(),
+                ft.Text(
+                    data.name,
+                    color="#000000",
+                    size=18,
+                    weight=ft.FontWeight.BOLD,
+                ),
+            ]
+        )
+        return device_btn
+
+
+class Device_Bot(Device):
+    def __init__(self, id, name, type, power, battery):
+        super().__init__(id, name, type)
+        self.power = power
+        self.battery = battery
+
+    def device_content(data):
+        device_btn = ft.Column(
+            [
+                ft.Image(
+                    src=f"assets/device_icon/{data.type}.png",
+                    width=ICON_WIDTH,
+                ),
+                ft.Column(),
+                ft.Text(
+                    data.name,
+                    color="#000000",
+                    size=18,
+                    weight=ft.FontWeight.BOLD,
+                ),
+            ]
+        )
+        return device_btn
+
+
+class Device_Meter(Device):
+    def __init__(self, id, name, type, temperature, humidity):
+        super().__init__(id, name, type)
+        self.temperature = temperature
+        self.humidity = humidity
+
+    def device_content(data):
+        device_btn = ft.Column(
+            [
+                ft.Row(
+                    [
+                        ft.Image(
+                            src=f"assets\device_icon\Temperature.png",
+                            width=25,
+                        ),
+                        ft.Text(
+                            f"{data.temperature}℃", weight=ft.FontWeight.BOLD, size=14
+                        ),
+                    ]
+                ),
+                ft.Row(
+                    [
+                        ft.Image(
+                            src=f"assets\device_icon\Humidity.png",
+                            width=25,
+                        ),
+                        ft.Text(
+                            f"{data.humidity}%", weight=ft.FontWeight.BOLD, size=14
+                        ),
+                    ]
+                ),
+                ft.Column(),
+                ft.Text(
+                    data.name,
+                    color="#000000",
+                    size=18,
+                    weight=ft.FontWeight.BOLD,
+                ),
+            ]
+        )
+        return device_btn
+
+
+class Device_Plug(Device):
+    def __init__(self, id, name, type, power):
+        super().__init__(id, name, type)
+        self.power = power
+
+    def device_content(data):
+        device_btn = ft.Column(
+            [
+                ft.Image(
+                    src=f"assets/device_icon/{data.type}.png",
+                    width=ICON_WIDTH,
+                ),
+                ft.Column(height=20),
+                ft.Text(
+                    data.name,
+                    color="#000000",
+                    size=18,
+                    weight=ft.FontWeight.BOLD,
+                ),
+                ft.Text(
+                    data.power,
+                    color="#000000",
+                    size=16,
+                    text_align=ft.alignment.top_left,
+                ),
+            ],
+            spacing=0,
+        )
+        return device_btn
 
 
 def main():
@@ -56,71 +183,90 @@ def main():
 
 def FLET_Login(page: ft.Page):
     page.title = "Login"
-    page.window_width = 1000
-    page.window_height = 600
+    page.window_width = PAGE_WIDTH
+    page.window_height = PAGE_HEIGHT
     page.theme_mode = ft.ThemeMode.LIGHT
 
     def Route_Change(route):
-        # page.views.clear()
-        # page.views.append(LOGIN_View)
+        page.views.clear()
+        page.views.append(LOGIN_View)
 
         # ---DEBUG---
-        page.views.append(HOME_DEV)
-        ChangePage(0)
-        response = [
-            {
-                "deviceId": "FFFFFFFFFFFF",
-                "deviceName": "プラグ1",
-                "deviceType": "Plug",
-                "enableCloudService": True,
-                "hubDeviceId": "000000000000",
-            },
-            {
-                "deviceId": "FFFFFFFFFFFF",
-                "deviceName": "テープライト",
-                "deviceType": "Strip Light",
-                "enableCloudService": True,
-                "hubDeviceId": "000000000000",
-            },
-            {
-                "deviceId": "FFFFFFFFFFFF",
-                "deviceName": "ハブミニ",
-                "deviceType": "Hub Mini",
-                "hubDeviceId": "000000000000",
-            },
-            {
-                "deviceId": "FFFFFFFFFFFF",
-                "deviceName": "温湿度計",
-                "deviceType": "Meter",
-                "enableCloudService": True,
-                "hubDeviceId": "FFFFFFFFFFFF",
-            },
-            {
-                "deviceId": "FFFFFFFFFFFF",
-                "deviceName": "プラグ3",
-                "deviceType": "Plug",
-                "enableCloudService": True,
-                "hubDeviceId": "000000000000",
-            },
-            {
-                "deviceId": "FFFFFFFFFFFF",
-                "deviceName": "プラグ2",
-                "deviceType": "Plug",
-                "enableCloudService": True,
-                "hubDeviceId": "000000000000",
-            },
-            {
-                "deviceId": "FFFFFFFFFFFF",
-                "deviceName": "スイッチ",
-                "deviceType": "Bot",
-                "enableCloudService": True,
-                "hubDeviceId": "FFFFFFFFFFFF",
-            },
-        ]
-        for i in response:
-            devices.append(Device(i["deviceId"], i["deviceName"], i["deviceType"]))
-        Main_home_page.controls = device_con()
-        page.update()
+        # page.views.append(HOME_DEV)
+        # ChangePage(0)
+        # response = [
+        #     {
+        #         "deviceId": "FFFFFFFFFFFF",
+        #         "deviceName": "プラグ1",
+        #         "deviceType": "Plug",
+        #         "enableCloudService": True,
+        #         "hubDeviceId": "000000000000",
+        #     },
+        #     {
+        #         "deviceId": "FFFFFFFFFFFF",
+        #         "deviceName": "テープライト",
+        #         "deviceType": "Strip Light",
+        #         "enableCloudService": True,
+        #         "hubDeviceId": "000000000000",
+        #     },
+        #     {
+        #         "deviceId": "FFFFFFFFFFFF",
+        #         "deviceName": "ハブミニ",
+        #         "deviceType": "Hub Mini",
+        #         "hubDeviceId": "000000000000",
+        #     },
+        #     {
+        #         "deviceId": "FFFFFFFFFFFF",
+        #         "deviceName": "温湿度計",
+        #         "deviceType": "Meter",
+        #         "enableCloudService": True,
+        #         "hubDeviceId": "FFFFFFFFFFFF",
+        #     },
+        #     {
+        #         "deviceId": "FFFFFFFFFFFF",
+        #         "deviceName": "プラグ3",
+        #         "deviceType": "Plug",
+        #         "enableCloudService": True,
+        #         "hubDeviceId": "000000000000",
+        #     },
+        #     {
+        #         "deviceId": "FFFFFFFFFFFF",
+        #         "deviceName": "プラグ2",
+        #         "deviceType": "Plug",
+        #         "enableCloudService": True,
+        #         "hubDeviceId": "000000000000",
+        #     },
+        #     {
+        #         "deviceId": "FFFFFFFFFFFF",
+        #         "deviceName": "スイッチ",
+        #         "deviceType": "Bot",
+        #         "enableCloudService": True,
+        #         "hubDeviceId": "FFFFFFFFFFFF",
+        #     },
+        # ]
+        # for i in response:
+        #     type = i["deviceType"]
+        #     if type == "Meter":
+        #         devices.append(
+        #             Device_Meter(
+        #                 i["deviceId"],
+        #                 i["deviceName"],
+        #                 i["deviceType"],
+        #                 i["temperature"],
+        #                 i["humidity"],
+        #             )
+        #         )
+        #     elif type == "Plug":
+        #         print(i)
+        #         devices.append(
+        #             Device_Plug(
+        #                 i["deviceId"], i["deviceName"], i["deviceType"], i["power"]
+        #             )
+        #         )
+        #     else:
+        #         devices.append(Device(i["deviceId"], i["deviceName"], i["deviceType"]))
+        # Main_home_page.controls = device_con()
+        # page.update()
         # ---DEBUG---
 
         if page.route == "/main":
@@ -151,39 +297,65 @@ def FLET_Login(page: ft.Page):
     devices = []
 
     def LOGIN_Click(e):
+        page.views.clear()
+        page.views.append(LOGIN_Progress_View)
+        page.update()
+
         response = Login_SwitchBot()
         if response == False:
+            page.views.clear()
+            page.views.append(LOGIN_View)
+            page.update()
             e.control.page.snack_bar = ft.SnackBar(
                 ft.Text("Login Failed", color="#ffffff"), bgcolor="#ff4a4a"
             )
             e.control.page.snack_bar.open = True
             e.control.page.update()
         else:
+            status = Get_Device_status(response)
             page.go("/main")
-            for i in response:
-                devices.append(Device(i["deviceId"], i["deviceName"], i["deviceType"]))
-            Main_home_page.controls = device_con()
+
+            for res, stat in zip(response, status):
+                type = res["deviceType"]
+                if type == "Meter":
+                    devices.append(
+                        Device_Meter(
+                            res["deviceId"],
+                            res["deviceName"],
+                            res["deviceType"],
+                            stat["temperature"],
+                            stat["humidity"],
+                        )
+                    )
+                elif type == "Plug":
+                    devices.append(
+                        Device_Plug(
+                            res["deviceId"],
+                            res["deviceName"],
+                            res["deviceType"],
+                            stat["power"],
+                        )
+                    )
+                else:
+                    devices.append(
+                        Device(res["deviceId"], res["deviceName"], res["deviceType"])
+                    )
+            Main_home_page.controls = device_con()  #! ?
             page.update()
 
     def device_con():
         items = []
-        print(devices)
         for data in devices:
             items.append(
                 ft.Container(
-                    content=ft.Text(
-                        data.device_name,
-                        color="#ffffff",
-                        size=18,
-                        weight=ft.FontWeight.BOLD,
-                    ),
+                    content=ft.Column([GetClass(data).device_content(data)]),
                     margin=5,
                     padding=10,
-                    width=140,
-                    height=110,
+                    width=170,
+                    height=120,
                     border_radius=10,
                     ink=True,
-                    bgcolor="#FF0000",
+                    bgcolor="#ffffff",
                     on_click=lambda e: print("clicked"),
                 )
             )
@@ -197,7 +369,16 @@ def FLET_Login(page: ft.Page):
         bgcolor="#4d82bc",
         color="#ffffff",
         width=200,
+        height=30,
         on_click=LOGIN_Click,
+    )
+
+    LOGIN_Button_Progress = ft.Container(
+        content=ft.ProgressBar(),
+        border_radius=10,
+        width=200,
+        height=30,
+        alignment=ft.alignment.center,
     )
 
     LOGIN_Space = ft.Column(height=50)
@@ -220,6 +401,13 @@ def FLET_Login(page: ft.Page):
     LOGIN_View = ft.View(
         "/",
         [LOGIN_Logo_Con, LOGIN_Text_Con, LOGIN_Button_Login, LOGIN_Space],
+        horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+        vertical_alignment=ft.MainAxisAlignment.CENTER,
+    )
+
+    LOGIN_Progress_View = ft.View(
+        "/",
+        [LOGIN_Logo_Con, LOGIN_Text_Con, LOGIN_Button_Progress, LOGIN_Space],
         horizontal_alignment=ft.CrossAxisAlignment.CENTER,
         vertical_alignment=ft.MainAxisAlignment.CENTER,
     )
@@ -270,6 +458,15 @@ def FLET_Login(page: ft.Page):
             page.views.append(SETTINGS_DEV)
         page.update()
 
+    def GetClass(data):
+        type = data.type
+        if type == "Meter":
+            return Device_Meter
+        elif type == "Plug":
+            return Device_Plug
+        else:
+            return Device
+
     def HOME_NavigationBar_Selected(index):
         print(f"Selected: {page_name[index]}")
         ChangePage(index)
@@ -298,19 +495,12 @@ def FLET_Login(page: ft.Page):
         on_change=lambda e: HOME_NavigationBar_Selected(e.control.selected_index),
     )
 
-    HOME_DEV = ft.View(
-        "/main",
-        [Main_home_page, Navigation],
-    )
+    HOME_DEV = ft.View("/main", [Main_home_page, Navigation], bgcolor=HOME_BGCOLOR)
 
-    SCENCES_DEV = ft.View(
-        "/main",
-        [Main_scenes_page, Navigation],
-    )
+    SCENCES_DEV = ft.View("/main", [Main_scenes_page, Navigation], bgcolor=HOME_BGCOLOR)
 
     SETTINGS_DEV = ft.View(
-        "/main",
-        [Main_settings_page, Navigation],
+        "/main", [Main_settings_page, Navigation], bgcolor=HOME_BGCOLOR
     )
 
     # --HOME--
@@ -338,6 +528,17 @@ def GET_Device_List():
     try:
         devices = GET_Request(Device_List_URL)["body"]
         return devices["deviceList"]
+    except:
+        return False
+
+
+def Get_Device_status(devices):
+    status = []
+    try:
+        for data in devices:
+            print(Device_Status_URL(data["deviceId"]))
+            status.append(GET_Request(Device_Status_URL(data["deviceId"]))["body"])
+        return status
     except:
         return False
 
