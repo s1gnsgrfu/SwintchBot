@@ -174,11 +174,6 @@ class Device_Plug(Device):
 
 def main():
     ft.app(target=FLET_Login)
-    # Login_SwitchBot()
-    # response=GET_Device_List()
-    # response=Login_SwitchBot()
-    # for data in response:
-    #    print(data)
 
 
 def FLET_Login(page: ft.Page):
@@ -190,84 +185,6 @@ def FLET_Login(page: ft.Page):
     def Route_Change(route):
         page.views.clear()
         page.views.append(LOGIN_View)
-
-        # ---DEBUG---
-        # page.views.append(HOME_DEV)
-        # ChangePage(0)
-        # response = [
-        #     {
-        #         "deviceId": "FFFFFFFFFFFF",
-        #         "deviceName": "プラグ1",
-        #         "deviceType": "Plug",
-        #         "enableCloudService": True,
-        #         "hubDeviceId": "000000000000",
-        #     },
-        #     {
-        #         "deviceId": "FFFFFFFFFFFF",
-        #         "deviceName": "テープライト",
-        #         "deviceType": "Strip Light",
-        #         "enableCloudService": True,
-        #         "hubDeviceId": "000000000000",
-        #     },
-        #     {
-        #         "deviceId": "FFFFFFFFFFFF",
-        #         "deviceName": "ハブミニ",
-        #         "deviceType": "Hub Mini",
-        #         "hubDeviceId": "000000000000",
-        #     },
-        #     {
-        #         "deviceId": "FFFFFFFFFFFF",
-        #         "deviceName": "温湿度計",
-        #         "deviceType": "Meter",
-        #         "enableCloudService": True,
-        #         "hubDeviceId": "FFFFFFFFFFFF",
-        #     },
-        #     {
-        #         "deviceId": "FFFFFFFFFFFF",
-        #         "deviceName": "プラグ3",
-        #         "deviceType": "Plug",
-        #         "enableCloudService": True,
-        #         "hubDeviceId": "000000000000",
-        #     },
-        #     {
-        #         "deviceId": "FFFFFFFFFFFF",
-        #         "deviceName": "プラグ2",
-        #         "deviceType": "Plug",
-        #         "enableCloudService": True,
-        #         "hubDeviceId": "000000000000",
-        #     },
-        #     {
-        #         "deviceId": "FFFFFFFFFFFF",
-        #         "deviceName": "スイッチ",
-        #         "deviceType": "Bot",
-        #         "enableCloudService": True,
-        #         "hubDeviceId": "FFFFFFFFFFFF",
-        #     },
-        # ]
-        # for i in response:
-        #     type = i["deviceType"]
-        #     if type == "Meter":
-        #         devices.append(
-        #             Device_Meter(
-        #                 i["deviceId"],
-        #                 i["deviceName"],
-        #                 i["deviceType"],
-        #                 i["temperature"],
-        #                 i["humidity"],
-        #             )
-        #         )
-        #     elif type == "Plug":
-        #         print(i)
-        #         devices.append(
-        #             Device_Plug(
-        #                 i["deviceId"], i["deviceName"], i["deviceType"], i["power"]
-        #             )
-        #         )
-        #     else:
-        #         devices.append(Device(i["deviceId"], i["deviceName"], i["deviceType"]))
-        # Main_home_page.controls = device_con()
-        # page.update()
-        # ---DEBUG---
 
         if page.route == "/main":
             ChangePage(0)
@@ -340,7 +257,7 @@ def FLET_Login(page: ft.Page):
                     devices.append(
                         Device(res["deviceId"], res["deviceName"], res["deviceType"])
                     )
-            Main_home_page.controls = device_con()  #! ?
+            Main_home_page.controls = device_con()
             page.update()
 
     def device_con():
@@ -418,7 +335,6 @@ def FLET_Login(page: ft.Page):
 
     Main_home_page = ft.Row(
         spacing=0,
-        controls=device_con(),
         wrap=True,
     )
 
@@ -468,7 +384,6 @@ def FLET_Login(page: ft.Page):
             return Device
 
     def HOME_NavigationBar_Selected(index):
-        print(f"Selected: {page_name[index]}")
         ChangePage(index)
 
     Navigation = ft.NavigationBar(
@@ -536,7 +451,6 @@ def Get_Device_status(devices):
     status = []
     try:
         for data in devices:
-            print(Device_Status_URL(data["deviceId"]))
             status.append(GET_Request(Device_Status_URL(data["deviceId"]))["body"])
         return status
     except:
@@ -576,11 +490,6 @@ def Login_SwitchBot():
     sign = base64.b64encode(
         hmac.new(secret, msg=string_to_sign, digestmod=hashlib.sha256).digest()
     )
-    print("Authorization: {}".format(token))
-    print("t: {}".format(t))
-    print("sign: {}".format(str(sign, "utf-8")))
-    print("nonce: {}".format(nonce))
-    print()
 
     # Build api header JSON
     apiHeader["Authorization"] = token
