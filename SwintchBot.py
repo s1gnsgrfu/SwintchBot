@@ -32,6 +32,10 @@ def Device_Status_URL(id):
     return f"{Device_List_URL}/{id}/status"
 
 
+def Device_Commands_URL(id):
+    return f"{Device_List_URL}/{id}/commands"
+
+
 # * Variable
 token = ""
 sign = ""
@@ -170,6 +174,26 @@ class Device_Plug(Device):
             spacing=0,
         )
         return device_btn
+
+    def Send_Command(cmd):
+        if cmd == "on":
+            command = "turnOn"
+        elif cmd == "off":
+            command = "turnOff"
+        else:
+            return {}
+
+        params = {
+            "command": f"{command}",
+            "parameter": f"",
+            "commandType": "command",
+        }
+        res = POST_Request(Device_Commands_URL(id), params)
+        if res["message"] == "success":
+            power = cmd
+            return True
+        else:
+            return False
 
 
 def main():
@@ -380,15 +404,6 @@ def FLET_Login(page: ft.Page):
             page.views.append(SETTINGS_DEV)
         page.update()
 
-    def GetClass(data):
-        type = data.type
-        if type == "Meter":
-            return Device_Meter
-        elif type == "Plug":
-            return Device_Plug
-        else:
-            return Device
-
     def HOME_NavigationBar_Selected(index):
         ChangePage(index)
 
@@ -461,6 +476,34 @@ def Get_Device_status(devices):
         return status
     except:
         return False
+
+
+def GetClass(data):
+    type = data.type
+    if type == "Meter":
+        return Device_Meter
+    elif type == "Plug":
+        return Device_Plug
+    else:
+        return Device
+
+
+def POST_Request(url, params):
+    res = requests.post(url, data=json.dumps(params), headers=apiHeader)
+    data = res.json()
+    print(data)
+    if data["message"] == "success":
+        return res.json()
+    return {}
+
+
+def Send_precommand(data):
+    print(data.type)
+    if data.type == "Plug":
+        if data.power == "on":
+            res = GetClass(data).Send_Command("off")
+        elif data.power == "off":
+            res = GetClass(data).Send_Command("on")
 
 
 def Login_SwitchBot():
