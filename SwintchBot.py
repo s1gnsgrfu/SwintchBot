@@ -229,17 +229,19 @@ def FLET_Login(page: ft.Page):
             e.control.page.snack_bar.open = True
             e.control.page.update()
         else:
-            status = Get_Device_status(response)
+            deviceList = response["deviceList"]
+            infraredRemoteList = response["infraredRemoteList"]
+            status = Get_Device_status(deviceList)
             page.go("/main")
 
-            for res, stat in zip(response, status):
-                type = res["deviceType"]
+            for data, stat in zip(deviceList, status):
+                type = data["deviceType"]
                 if type == "Meter":
                     devices.append(
                         Device_Meter(
-                            res["deviceId"],
-                            res["deviceName"],
-                            res["deviceType"],
+                            data["deviceId"],
+                            data["deviceName"],
+                            data["deviceType"],
                             stat["temperature"],
                             stat["humidity"],
                         )
@@ -247,16 +249,20 @@ def FLET_Login(page: ft.Page):
                 elif type == "Plug":
                     devices.append(
                         Device_Plug(
-                            res["deviceId"],
-                            res["deviceName"],
-                            res["deviceType"],
+                            data["deviceId"],
+                            data["deviceName"],
+                            data["deviceType"],
                             stat["power"],
                         )
                     )
                 else:
                     devices.append(
-                        Device(res["deviceId"], res["deviceName"], res["deviceType"])
+                        Device(data["deviceId"], data["deviceName"], data["deviceType"])
                     )
+            for data in infraredRemoteList:
+                devices.append(
+                    Device(data["deviceId"], data["deviceName"], data["remoteType"])
+                )
             Main_home_page.controls = device_con()
             page.update()
 
@@ -442,7 +448,7 @@ def GET_Request(url):
 def GET_Device_List():
     try:
         devices = GET_Request(Device_List_URL)["body"]
-        return devices["deviceList"]
+        return devices
     except:
         return False
 
