@@ -17,6 +17,14 @@ import uuid
 import flet as ft
 import requests
 
+class Device:
+    def __init__(self, device_id, device_name, device_type):
+        self.device_id = device_id
+        self.device_name = device_name
+        self.device_type = device_type
+
+    # device_list=ft.
+
 # ! The token and secret are written in the key file.
 # ! 1st line : token
 # ! 2nd line : secret
@@ -50,10 +58,26 @@ def FLET_Login(page: ft.Page):
     page.theme_mode = ft.ThemeMode.LIGHT
 
     def Route_Change(route):
-        page.views.clear()
-        page.views.append(LOGIN_View)
-        # page.views.append(HOME_DEV)  # debug
-        # ChangePage(0)  #debug
+        # page.views.clear()
+        # page.views.append(LOGIN_View)
+
+        #---DEBUG---
+        page.views.append(HOME_DEV)
+        ChangePage(0)
+        response=[
+            {'deviceId': 'FFFFFFFFFFFF', 'deviceName': 'プラグ1', 'deviceType': 'Plug', 'enableCloudService': True, 'hubDeviceId': '000000000000'},
+            {'deviceId': 'FFFFFFFFFFFF', 'deviceName': 'テープライト', 'deviceType': 'Strip Light', 'enableCloudService': True, 'hubDeviceId': '000000000000'},
+            {'deviceId': 'FFFFFFFFFFFF', 'deviceName': 'ハブミニ', 'deviceType': 'Hub Mini', 'hubDeviceId': '000000000000'},
+            {'deviceId': 'FFFFFFFFFFFF', 'deviceName': '温湿度計', 'deviceType': 'Meter', 'enableCloudService': True, 'hubDeviceId': 'FFFFFFFFFFFF'},
+            {'deviceId': 'FFFFFFFFFFFF', 'deviceName': 'プラグ3', 'deviceType': 'Plug', 'enableCloudService': True, 'hubDeviceId': '000000000000'},
+            {'deviceId': 'FFFFFFFFFFFF', 'deviceName': 'プラグ2', 'deviceType': 'Plug', 'enableCloudService': True, 'hubDeviceId': '000000000000'},
+            {'deviceId': 'FFFFFFFFFFFF', 'deviceName': 'スイッチ', 'deviceType': 'Bot', 'enableCloudService': True, 'hubDeviceId': 'FFFFFFFFFFFF'}
+            ]
+        for i in response:
+            devices.append(Device(i["deviceId"],i["deviceName"],i["deviceType"]))
+        Main_home_page.controls=device_con()
+        page.update()
+        #---DEBUG---
 
         if page.route == "/main":
             ChangePage(0)
@@ -79,6 +103,9 @@ def FLET_Login(page: ft.Page):
         color="#000000",
     )
 
+    global devices
+    devices=[]
+
     def LOGIN_Click(e):
         response = Login_SwitchBot()
         if response == False:
@@ -89,8 +116,28 @@ def FLET_Login(page: ft.Page):
             e.control.page.update()
         else:
             page.go("/main")
-            for data in response:
-                print(data)
+            for i in response:
+                devices.append(Device(i["deviceId"],i["deviceName"],i["deviceType"]))
+            Main_home_page.controls=device_con()
+            page.update()
+
+    def device_con():
+        items = []
+        print(devices)
+        for data in devices:
+            items.append(ft.Container(
+                    content=ft.Text(data.device_name, color="#ffffff",size=20, weight=ft.FontWeight.BOLD),
+                    margin=5,
+                    padding=10,
+                    alignment=ft.alignment.top_right,
+                    width=150,
+                    height=150,
+                    border_radius=10,
+                    ink=True,
+                    bgcolor="#FF0000",
+                    on_click=lambda e: print("clicked"),
+                ))
+        return items
 
     LOGIN_Button_Login = ft.ElevatedButton(
         "Login",
@@ -131,22 +178,15 @@ def FLET_Login(page: ft.Page):
     # --HOME--
     page_name = ["Home", "Scenes", "Settings"]
 
-    Main_home_page = ft.Container(
-                    content=ft.Text("Clickable transparent with Ink"),
-                    margin=10,
-                    padding=10,
-                    alignment=ft.alignment.center,
-                    width=150,
-                    height=150,
-                    border_radius=10,
-                    ink=True,
-                    bgcolor="#FF0000",
-                    on_click=lambda e: print("Clickable transparent with Ink clicked!"),
-                )
+    Main_home_page = ft.Row(
+        spacing=0,
+        controls=device_con(),
+        wrap=True,
+        )
 
     Main_scenes_page = ft.Container(
                     content=ft.Text("Clickable transparent with Ink"),
-                    margin=10,
+                    margin=5,
                     padding=10,
                     alignment=ft.alignment.center,
                     width=150,
