@@ -53,10 +53,11 @@ ICON_WIDTH = 40
 
 
 class Device:
-    def __init__(self, id, name, type):
+    def __init__(self, id, name, type, c):
         self.id = id
         self.name = name
         self.type = type
+        self.c = c
 
     def device_content(data):
         device_btn = ft.Column(
@@ -78,8 +79,8 @@ class Device:
 
 
 class Device_Bot(Device):
-    def __init__(self, id, name, type, power, battery):
-        super().__init__(id, name, type)
+    def __init__(self, id, name, type, power, battery, c):
+        super().__init__(id, name, type, c)
         self.power = power
         self.battery = battery
 
@@ -103,8 +104,8 @@ class Device_Bot(Device):
 
 
 class Device_Meter(Device):
-    def __init__(self, id, name, type, temperature, humidity):
-        super().__init__(id, name, type)
+    def __init__(self, id, name, type, temperature, humidity, c):
+        super().__init__(id, name, type, c)
         self.temperature = temperature
         self.humidity = humidity
 
@@ -146,8 +147,8 @@ class Device_Meter(Device):
 
 
 class Device_Plug(Device):
-    def __init__(self, id, name, type, power):
-        super().__init__(id, name, type)
+    def __init__(self, id, name, type, power, c):
+        super().__init__(id, name, type, c)
         self.power = power
 
     def device_content(data):
@@ -175,7 +176,7 @@ class Device_Plug(Device):
         )
         return device_btn
 
-    def Send_Command(cmd):
+    def Send_Command(cmd, dev):
         if cmd == "on":
             command = "turnOn"
         elif cmd == "off":
@@ -188,10 +189,11 @@ class Device_Plug(Device):
             "parameter": f"",
             "commandType": "command",
         }
-        res = POST_Request(Device_Commands_URL(id), params)
+        res = POST_Request(Device_Commands_URL(dev.id), params)
+        print(res["statusCode"])
         if res["message"] == "success":
-            power = cmd
-            return True
+            dev.power = cmd
+            return cmd
         else:
             return False
 
@@ -235,15 +237,21 @@ def FLET_Login(page: ft.Page):
     )
 
     global devices
+    global items
     devices = []
+    items = []
 
     def LOGIN_Click(e):
         page.views.clear()
         page.views.append(LOGIN_Progress_View)
         page.update()
 
+        count = 0
         response = Login_SwitchBot()
-        if response == False:
+        deviceList = response["deviceList"]
+        infraredRemoteList = response["infraredRemoteList"]
+        status = Get_Device_status(deviceList)
+        if response == False or status == False:
             page.views.clear()
             page.views.append(LOGIN_View)
             page.update()
@@ -253,9 +261,6 @@ def FLET_Login(page: ft.Page):
             e.control.page.snack_bar.open = True
             e.control.page.update()
         else:
-            deviceList = response["deviceList"]
-            infraredRemoteList = response["infraredRemoteList"]
-            status = Get_Device_status(deviceList)
             page.go("/main")
 
             for data, stat in zip(deviceList, status):
@@ -268,6 +273,7 @@ def FLET_Login(page: ft.Page):
                             data["deviceType"],
                             stat["temperature"],
                             stat["humidity"],
+                            count,
                         )
                     )
                 elif type == "Plug":
@@ -277,21 +283,33 @@ def FLET_Login(page: ft.Page):
                             data["deviceName"],
                             data["deviceType"],
                             stat["power"],
+                            count,
                         )
                     )
                 else:
                     devices.append(
-                        Device(data["deviceId"], data["deviceName"], data["deviceType"])
+                        Device(
+                            data["deviceId"],
+                            data["deviceName"],
+                            data["deviceType"],
+                            count,
+                        )
                     )
+                count = count + 1
             for data in infraredRemoteList:
                 devices.append(
-                    Device(data["deviceId"], data["deviceName"], data["remoteType"])
+                    Device(
+                        data["deviceId"],
+                        data["deviceName"],
+                        data["remoteType"],
+                        count,
+                    )
                 )
+                count = count + 1
             Main_home_page.controls = device_con()
             page.update()
 
     def device_con():
-        items = []
         for data in devices:
             items.append(
                 ft.Container(
@@ -303,10 +321,16 @@ def FLET_Login(page: ft.Page):
                     border_radius=10,
                     ink=True,
                     bgcolor="#ffffff",
-                    on_click=lambda e: print("clicked"),
                 )
             )
+
+        for dev, itm in zip(devices, items):
+            Set_Click(dev, itm)
         return items
+
+    def Set_Click(dev, data):
+        data.on_click = lambda e: Send_precommand(dev)
+        return
 
     LOGIN_Button_Login = ft.ElevatedButton(
         "Login",
@@ -450,6 +474,18 @@ def FLET_Login(page: ft.Page):
     page.on_view_pop = view_pop
     page.go(page.route)
 
+    def Send_precommand(data):
+        print(data.type)
+        if data.type == "Plug":
+            if data.power == "on":
+                res = GetClass(data).Send_Command("off", data)
+            elif data.power == "off":
+                res = GetClass(data).Send_Command("on", data)
+
+            if res != False:
+                items[data.c].content = ft.Column([GetClass(data).device_content(data)])
+                page.update()
+
 
 def GET_Request(url):
     response = requests.get(url, headers=apiHeader)
@@ -495,15 +531,6 @@ def POST_Request(url, params):
     if data["message"] == "success":
         return res.json()
     return {}
-
-
-def Send_precommand(data):
-    print(data.type)
-    if data.type == "Plug":
-        if data.power == "on":
-            res = GetClass(data).Send_Command("off")
-        elif data.power == "off":
-            res = GetClass(data).Send_Command("on")
 
 
 def Login_SwitchBot():
