@@ -13,6 +13,7 @@ import json
 import pathlib
 import time
 import uuid
+import os
 
 import flet as ft
 import requests
@@ -63,7 +64,7 @@ class Device:
         device_btn = ft.Column(
             [
                 ft.Image(
-                    src=f"assets/device_icon/{data.type}.png",
+                    src=os.path.join("device_icon", f"{data.type}.png"),
                     width=ICON_WIDTH,
                 ),
                 ft.Column(),
@@ -88,7 +89,7 @@ class Device_Bot(Device):
         device_btn = ft.Column(
             [
                 ft.Image(
-                    src=f"assets/device_icon/{data.type}.png",
+                    src=os.path.join("device_icon", f"{data.type}.png"),
                     width=ICON_WIDTH,
                 ),
                 ft.Column(),
@@ -115,7 +116,7 @@ class Device_Meter(Device):
                 ft.Row(
                     [
                         ft.Image(
-                            src=f"assets\device_icon\Temperature.png",
+                            src=os.path.join("device_icon", "Temperature.png"),
                             width=25,
                         ),
                         ft.Text(
@@ -126,7 +127,7 @@ class Device_Meter(Device):
                 ft.Row(
                     [
                         ft.Image(
-                            src=f"assets\device_icon\Humidity.png",
+                            src=os.path.join("device_icon", "Humidity.png"),
                             width=25,
                         ),
                         ft.Text(
@@ -155,7 +156,7 @@ class Device_Plug(Device):
         device_btn = ft.Column(
             [
                 ft.Image(
-                    src=f"assets/device_icon/{data.type}.png",
+                    src=os.path.join("device_icon", f"{data.type}.png"),
                     width=ICON_WIDTH,
                 ),
                 ft.Column(height=20),
@@ -197,10 +198,8 @@ class Device_Plug(Device):
         else:
             return False
 
-
 def main():
     ft.app(target=FLET_Login)
-
 
 def FLET_Login(page: ft.Page):
     page.title = "Login"
@@ -217,7 +216,7 @@ def FLET_Login(page: ft.Page):
 
     # --LOGIN--
     LOGIN_Logo = ft.Image(
-        src=f"assets/Logo_long.png",
+        src=os.path.join("Logo_long.png"),
     )
 
     LOGIN_Text_token = ft.TextField(
@@ -248,6 +247,17 @@ def FLET_Login(page: ft.Page):
 
         count = 0
         response = Login_SwitchBot()
+        #?keyが不適切か通信ができないとFlaseが返ってくる
+        if response == False:
+            page.views.clear()
+            page.views.append(LOGIN_View)
+            page.update()
+            e.control.page.snack_bar = ft.SnackBar(
+                ft.Text("Login Failed", color="#ffffff"), bgcolor="#ff4a4a"
+            )
+            e.control.page.snack_bar.open = True
+            e.control.page.update()
+            return
         deviceList = response["deviceList"]
         infraredRemoteList = response["infraredRemoteList"]
         status = Get_Device_status(deviceList)
